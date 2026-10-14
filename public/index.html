@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>抖音作品下载</title>
+<style>
+  :root { --bg:#111319; --card:#1b1f2a; --line:#2a3040; --fg:#e6e8ee; --mut:#8b93a7; --acc:#4c8dff; --ok:#37c871; --warn:#f0a020; --hover:#3a4460; --thumb:#0c0e13; }
+  html[data-theme="light"] { --bg:#f4f5f7; --card:#ffffff; --line:#dfe3ea; --fg:#1b1f27; --mut:#6b7280; --acc:#2f6fe0; --ok:#1f9d55; --warn:#c47f0a; --hover:#b9c2d0; --thumb:#e6e8ee; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.5 system-ui,"Segoe UI",Microsoft YaHei,sans-serif; }
+  .wrap { max-width:1180px; margin:0 auto; padding:0 20px; }
+  .stickytop { position:sticky; top:0; z-index:30; background:var(--bg); border-bottom:1px solid var(--line); box-shadow:0 4px 12px rgba(0,0,0,.12); }
+  header { padding:14px 0; border-bottom:1px solid var(--line); display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .stickytop .tabs { margin:0; padding:4px 0 0; }
+  .stickytop .rbar { padding:10px 0; margin:0; }
+  h1 { font-size:16px; margin:0 12px 0 0; font-weight:600; }
+  input[type=text] { flex:1; min-width:260px; padding:9px 12px; background:var(--card); border:1px solid var(--line); border-radius:8px; color:var(--fg); }
+  button { padding:9px 14px; background:var(--acc); color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:13px; }
+  button.ghost { background:var(--card); border:1px solid var(--line); color:var(--fg); }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  .seg { display:inline-flex; flex:0 0 auto; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  .seg button { background:var(--card); color:var(--mut); border-radius:0; padding:9px 12px; }
+  .seg button.on { background:var(--acc); color:#fff; }
+  main { padding:0; }
+  main .wrap { padding-top:16px; padding-bottom:40px; }
+  .bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+  .bar .sp { flex:1; }
+  .meta { color:var(--mut); font-size:13px; }
+  .list { display:flex; flex-direction:column; gap:8px; }
+  .row { display:flex; gap:12px; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px; cursor:pointer; user-select:none; }
+  .row:hover { border-color:var(--hover); }
+  .row.sel { border-color:var(--acc); }
+  .pick { pointer-events:none; flex:0 0 auto; }
+  .open { flex:0 0 auto; font-size:12px; text-decoration:none; white-space:nowrap; padding:5px 9px; border:1px solid var(--line); border-radius:8px; color:var(--mut); }
+  .open:hover { border-color:var(--acc); color:var(--fg); }
+  select { padding:6px 8px; background:var(--card); border:1px solid var(--line); border-radius:8px; color:var(--fg); }
+  input[type=number] { padding:6px 8px; background:var(--card); border:1px solid var(--line); border-radius:8px; color:var(--fg); }
+  .chk { display:inline-flex; align-items:center; gap:5px; color:var(--fg); font-size:13px; cursor:pointer; }
+  .thumb { width:54px; height:72px; object-fit:cover; border-radius:6px; background:var(--thumb); flex:0 0 auto; }
+  .avatar { width:56px; height:56px; border-radius:50%; object-fit:cover; background:var(--thumb); flex:0 0 auto; }
+  #loginMsg { display:inline-flex; align-items:center; gap:6px; }
+  .avatar-sm { width:22px; height:22px; border-radius:50%; object-fit:cover; background:var(--thumb); vertical-align:middle; }
+  .b-verify { color:#ffb454; border-color:#7a5a2f; }
+  #rbar.searchmode > *:not(#meta):not(.sp) { display:none; }
+  .info { flex:1; min-width:0; }
+  .desc { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sub { color:var(--mut); font-size:12px; margin-top:3px; display:flex; gap:10px; flex-wrap:wrap; }
+  .badge { font-size:11px; padding:1px 7px; border-radius:20px; border:1px solid var(--line); }
+  .b-video { color:#7db4ff; border-color:#2f4a7a; }
+  .b-images { color:#c79bff; border-color:#4a3a7a; }
+  .b-mixed { color:#ffb36b; border-color:#7a5a2f; }
+  .s-done { color:var(--ok); border-color:#245a37; }
+  .s-partial { color:var(--warn); border-color:#6a4d16; }
+  .s-missing { color:var(--mut); }
+  html[data-theme="light"] .b-video { color:#2f6fe0; border-color:#b9d0f5; }
+  html[data-theme="light"] .b-images { color:#8a4fe0; border-color:#ddc8f5; }
+  html[data-theme="light"] .b-mixed { color:#c47f0a; border-color:#f0d9a8; }
+  html[data-theme="light"] .s-done { color:#1f9d55; border-color:#bfe3cd; }
+  html[data-theme="light"] .s-partial { color:#c47f0a; border-color:#f0d9a8; }
+  .btn-author { margin-left:6px; }
+  .cfgcard { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px; display:flex; flex-direction:column; gap:10px; }
+  .cfgrow { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .cfglabel { flex:0 0 64px; color:var(--mut); font-size:13px; }
+  .cfgctl { display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex:1; min-width:0; }
+  .cfgctl input[type=text] { flex:1; min-width:200px; padding:7px 10px; }
+  .cfgctl input[type=number].num { width:72px; flex:none; min-width:0; }
+  .sep { border-left:1px solid var(--line); padding-left:12px; margin-left:4px; }
+  .mask { position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:100; }
+  .mask.show { display:flex; }
+  .dialog { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; width:min(560px,92vw); box-shadow:0 16px 48px rgba(0,0,0,.5); }
+  .dialog h3 { margin:0 0 8px; font-size:15px; }
+  .dialog .hint { color:var(--mut); font-size:12px; line-height:1.6; margin-bottom:10px; }
+  .dialog textarea { width:100%; height:180px; resize:vertical; background:var(--bg); border:1px solid var(--line); border-radius:8px; color:var(--fg); padding:10px; font-family:ui-monospace,Consolas,monospace; font-size:12px; box-sizing:border-box; }
+  .dialog .dlgfoot { display:flex; align-items:center; gap:10px; margin-top:10px; }
+  .dialog .dlgfoot .sp { flex:1; }
+  .tabs { display:flex; gap:4px; margin-bottom:12px; border-bottom:1px solid var(--line); }
+  .tabs .sp { flex:1; }
+  .tabtoggle { background:transparent; border:none; color:var(--mut); padding:8px 10px; font-size:12px; cursor:pointer; align-self:center; }
+  .tabtoggle:hover { color:var(--fg); }
+  .stickytop.collapsed #topform { display:none; }
+  .stickytop.collapsed #rbar { display:none !important; }
+  .tab { background:transparent; border:none; border-bottom:2px solid transparent; border-radius:0; color:var(--mut); padding:8px 14px; font-size:14px; }
+  .tab:hover { color:var(--fg); }
+  .tab.active { color:var(--fg); border-bottom-color:var(--acc); }
+  .tab .cnt { display:inline-block; min-width:18px; text-align:center; font-size:11px; background:var(--line); border-radius:10px; padding:0 6px; margin-left:5px; }
+  .tab.active .cnt { background:var(--acc); color:#fff; }
+  #sdot { background:var(--mut); color:transparent; width:9px; height:9px; min-width:0; padding:0; border-radius:50%; vertical-align:middle; margin-left:7px; overflow:hidden; }
+  #sdot.run { background:var(--warn); animation:sdotPulse 1s ease-in-out infinite; }
+  #sdot.done { background:var(--ok); }
+  #sdot.fail { background:#e0553f; }
+  @keyframes sdotPulse { 0%,100% { opacity:1; } 50% { opacity:.35; } }
+  .tabsection { display:none; }
+  .tabsection.active { display:block; }
+  .qpanel { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+  .qhead { display:flex; gap:10px; align-items:center; }
+  .qhead .sp { flex:1; }
+  .qlist { margin-top:8px; max-height:60vh; overflow:auto; }
+  .qitem { display:flex; gap:10px; align-items:center; padding:7px 0; border-top:1px solid var(--line); font-size:13px; }
+  .qitem .qdesc { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .qitem .qau { color:var(--mut); flex:0 0 auto; }
+  .qitem .badge { flex:0 0 auto; }
+  .qitem button { padding:2px 9px; font-size:12px; }
+  .qempty { color:var(--mut); padding:18px 4px; text-align:center; }
+  #progress { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+  #log { max-height:220px; overflow:auto; font:12px/1.5 Consolas,monospace; color:var(--mut); white-space:pre-wrap; }
+  .pbar { height:6px; background:var(--thumb); border-radius:3px; overflow:hidden; margin:8px 0; }
+  .pbar > i { display:block; height:100%; width:0; background:var(--acc); transition:width .2s; }
+  a { color:var(--acc); }
+  #toasts { position:fixed; right:16px; bottom:16px; z-index:100; display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
+  .toast { background:var(--card); border:1px solid var(--line); border-left:3px solid var(--acc); border-radius:10px; padding:10px 14px; box-shadow:0 8px 24px rgba(0,0,0,.32); min-width:220px; max-width:340px; cursor:pointer; animation:toastIn .25s ease; transition:opacity .3s; }
+  .toast.ok { border-left-color:var(--ok); }
+  .toast.fail { border-left-color:#e0553f; }
+  .toast .t-title { font-weight:600; }
+  .toast .t-sub { color:var(--mut); font-size:12px; margin-top:3px; }
+  @keyframes toastIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+</style>
+<script>try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.dataset.theme='light';}catch(e){}</script>
+</head>
+<body>
+<div id="toasts"></div>
+<div class="stickytop">
+  <div class="wrap">
+    <div id="topform">
+      <header>
+        <h1>抖音作品下载</h1>
+        <input id="input" type="text" placeholder="粘贴链接 / sec_uid / aweme_id，或输入用户名关键词搜索" />
+        <div class="seg" id="searchMode" title="关键词搜索方式">
+          <button type="button" data-mode="name" class="on">用户名</button>
+          <button type="button" data-mode="id">抖音号</button>
+        </div>
+        <button id="btnGo">识别 / 搜索</button>
+        <button class="ghost" id="btnCancel" style="display:none">取消采集</button>
+        <button class="ghost" id="btnTheme" title="切换主题">夜间</button>
+      </header>
+
+      <div id="cfgcard" class="cfgcard">
+        <div class="cfgrow">
+          <span class="cfglabel">下载目录</span>
+          <div class="cfgctl">
+            <input id="outdir" type="text" placeholder="例如 D:\下载\douyin" />
+            <button class="ghost" id="btnPickOut">浏览…</button>
+          </div>
+        </div>
+        <div class="cfgrow">
+          <span class="cfglabel">下载模式</span>
+          <div class="cfgctl">
+            <label class="chk"><input type="checkbox" id="modeRaw" checked /> 散件</label>
+            <label class="chk"><input type="checkbox" id="modeCompose" /> 合成 MP4</label>
+            <span class="meta sep">每图停留</span>
+            <input id="interval" type="number" class="num" min="0.5" step="0.5" value="3" />
+            <span class="meta">秒</span>
+          </div>
+        </div>
+        <div class="cfgrow">
+          <span class="cfglabel">ffmpeg</span>
+          <div class="cfgctl">
+            <input id="ffmpeg" type="text" placeholder="留空自动探测（也可用 PATH 中的 ffmpeg）" />
+            <span id="ffMsg" class="meta"></span>
+          </div>
+        </div>
+        <div class="cfgrow">
+          <span class="cfglabel">采集超时</span>
+          <div class="cfgctl">
+            <input id="ctimeout" type="number" class="num" min="10" step="10" value="120" />
+            <span class="meta">秒</span>
+            <span class="sp"></span>
+            <span id="cfgMsg" class="meta"></span>
+            <button id="btnSaveCfg">保存设置</button>
+          </div>
+        </div>
+        <div class="cfgrow">
+          <span class="cfglabel">登录态</span>
+          <div class="cfgctl">
+            <span id="loginMsg" class="meta">检测中…</span>
+            <span class="sp"></span>
+            <button id="btnEdgeImport" class="ghost">从 Edge 自动导入</button>
+            <button class="ghost" id="btnImportCookies">导入 Cookie</button>
+            <button class="ghost" id="btnEdgeLogin">用 Edge 登录</button>
+            <button class="ghost" id="btnLogout" style="display:none">退出登录</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="results">检索结果<span id="resCnt" class="cnt">0</span></button>
+      <button class="tab" data-tab="queue">下载列表<span id="qcount" class="cnt">0</span></button>
+      <button class="tab" data-tab="status">下载状态<span id="sdot" class="cnt">·</span></button>
+      <span class="sp"></span>
+      <button class="tabtoggle" id="btnCollapse" title="折叠/展开固定区">收起 ▲</button>
+    </div>
+
+    <div id="rbar" class="bar rbar">
+      <span id="meta" class="meta"></span>
+      <span id="authorBtnWrap"></span>
+      <span class="sp"></span>
+      <span class="meta">排序</span>
+      <select id="sort">
+        <option value="old">时间 旧→新</option>
+        <option value="new">时间 新→旧</option>
+        <option value="count-desc">素材 多→少</option>
+        <option value="count-asc">素材 少→多</option>
+      </select>
+      <span class="meta">清晰度</span>
+      <input id="quality" type="text" value="" placeholder="最高" style="width:70px;flex:none;min-width:0;padding:6px 8px" />
+      <button class="ghost" id="btnAll">全选</button>
+      <button class="ghost" id="btnNone">清空</button>
+      <button class="ghost" id="btnTodo">只选未完成</button>
+      <button class="ghost" id="btnAddQ">加入编队</button>
+      <button id="btnDl">下载选中</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+  <section id="tab-results" class="tabsection active">
+    <div id="list" class="list"></div>
+  </section>
+
+  <section id="tab-queue" class="tabsection">
+    <div class="qpanel">
+      <div class="qhead">
+        <span class="meta">编队内作品会按作者分文件夹下载；可跨多个用户累积。</span>
+        <span class="sp"></span>
+        <button class="ghost" id="btnQClear">清空编队</button>
+        <button id="btnQDl">下载编队</button>
+      </div>
+      <div id="qlist" class="qlist"></div>
+    </div>
+  </section>
+
+  <section id="tab-status" class="tabsection">
+    <div id="progress">
+      <div><b id="ptext">准备中…</b> <button class="ghost" id="btnStop" style="display:none">停止</button></div>
+      <div class="pbar"><i id="pbar"></i></div>
+      <div id="log"></div>
+    </div>
+  </section>
+  </div>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+let state = { view:'works', type:null, author:null, works:[], selected:new Set(), queueIds:[] };
+let searchMode = 'name'; // 'name' 按用户名 | 'id' 按抖音号
+
+const TYPE_TXT = { video:'视频', images:'图集', mixed:'图文' };
+const ST_TXT = { done:'已完成', partial:'部分缺失', missing:'未下载' };
+const SORTS = {
+  'old': (a,b) => (a.createTime||0) - (b.createTime||0),
+  'new': (a,b) => (b.createTime||0) - (a.createTime||0),
+  'count-desc': (a,b) => b.mediaCount - a.mediaCount,
+  'count-asc': (a,b) => a.mediaCount - b.mediaCount,
+};
+
+function esc(s){ return String(s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+// 大数字简写: 203361149 -> 2.0亿, 4656172 -> 465.6万
+function fmtNum(n){ n=Number(n)||0; if(n>=1e8) return (n/1e8).toFixed(1)+'亿'; if(n>=1e4) return (n/1e4).toFixed(1)+'万'; return String(n); }
+// 作品原地址: 视频→/video/, 图集/图文→/note/
+function srcUrl(w){ return `https://www.douyin.com/${w.type==='video'?'video':'note'}/${w.id}`; }
+function toggleSel(id){ if (state.selected.has(id)) state.selected.delete(id); else state.selected.add(id); }
+
+function applyWorks(d) {
+  state.view = 'works';
+  state.type = d.type; state.author = d.author; state.works = d.works || [];
+  $('#rbar').classList.remove('searchmode');
+  // 清理已不存在的选中项
+  const idset = new Set(state.works.map(w => w.id));
+  [...state.selected].forEach(id => { if (!idset.has(id)) state.selected.delete(id); });
+  $('#resCnt').textContent = state.works.length;
+  $('#meta').textContent = `@${state.author.nickname} · 共 ${state.works.length} 个作品`;
+  $('#authorBtnWrap').innerHTML = '';
+  if (state.type === 'video' && state.author.secUid) {
+    $('#authorBtnWrap').innerHTML = `<button class="ghost btn-author" id="btnAuthor">查看该作者全部作品</button>`;
+    $('#btnAuthor').onclick = () => collect(state.author.secUid);
+  }
+  renderWorks();
+}
+
+function renderWorks() {
+  const box = $('#list');
+  box.innerHTML = '';
+  const cmp = SORTS[$('#sort').value] || SORTS['old'];
+  const works = [...state.works].sort(cmp);
+  for (const w of works) {
+    const row = document.createElement('div');
+    const on = state.selected.has(w.id);
+    row.className = 'row' + (on ? ' sel' : '');
+    row.dataset.id = w.id;
+    const cover = w.cover ? `/api/img?u=${encodeURIComponent(w.cover)}` : '';
+    row.innerHTML = `
+      <input class="pick" type="checkbox" data-id="${w.id}" ${on ? 'checked' : ''} />
+      ${cover ? `<img class="thumb" loading="lazy" src="${cover}" onerror="this.style.visibility='hidden'">` : '<div class="thumb"></div>'}
+      <div class="info">
+        <div class="desc" title="${esc(w.desc)}">${esc(w.desc) || '(无文案)'}</div>
+        <div class="sub">
+          <span class="badge b-${w.type}">${TYPE_TXT[w.type]||w.type}</span>
+          <span>${w.mediaCount} 个素材</span>
+          <span>${w.date}</span>
+          <span class="badge s-${w.local.status}">${ST_TXT[w.local.status]} ${w.local.have}/${w.local.expected}</span>
+        </div>
+      </div>
+      <a class="open" href="${srcUrl(w)}" target="_blank" rel="noreferrer" title="打开原地址">原地址 ↗</a>`;
+    // 点击整行(除"原地址"链接外)即切换选中, 不必点复选框
+    row.addEventListener('click', (e) => {
+      if (e.target.closest('.open')) return;
+      toggleSel(w.id);
+      const sel = state.selected.has(w.id);
+      row.classList.toggle('sel', sel);
+      row.querySelector('.pick').checked = sel;
+    });
+    box.appendChild(row);
+  }
+}
+
+function selectedIds() { return [...document.querySelectorAll('#list input:checked')].map(i => i.dataset.id); }
+
+async function collect(input) {
+  const btnGo = $('#btnGo');
+  const isLink = /^https?:\/\//i.test(input) || /^MS4wLjAB/.test(input) || /^\d{15,}$/.test(input);
+  $('#meta').textContent = isLink ? '识别中…（需滚动加载，稍候）' : '搜索中…（会弹出浏览器窗口自动搜索，请稍候）';
+  $('#list').innerHTML = '';
+  $('#authorBtnWrap').innerHTML = '';
+  btnGo.disabled = true; $('#btnCancel').style.display = '';
+  try {
+    const r = await fetch('/api/collect', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ input, mode: searchMode }) });
+    const d = await r.json();
+    if (!d.ok) { $('#meta').textContent = /取消/.test(d.error||'') ? '已取消' : ('失败：' + d.error); return; }
+    if (d.type === 'search') renderUsers(d);
+    else applyWorks(d);
+  } catch (e) { $('#meta').textContent = '请求异常：' + e.message; }
+  finally { btnGo.disabled = false; $('#btnCancel').style.display = 'none'; }
+}
+
+// 渲染"用户搜索结果"(仿官方搜索页: 头像 + 昵称)
+function renderUsers(d) {
+  state.view = 'search'; state.type = 'search';
+  state.works = []; state.selected.clear();
+  const users = d.users || [];
+  $('#resCnt').textContent = users.length;
+  $('#meta').textContent = `搜索“${d.keyword || ''}”${d.mode === 'id' ? '（按抖音号）' : ''} · ${users.length} 个用户`;
+  $('#authorBtnWrap').innerHTML = '';
+  $('#rbar').classList.add('searchmode'); // 隐藏排序/下载等控件
+  const box = $('#list'); box.innerHTML = '';
+  if (!users.length) { box.innerHTML = `<div class="qempty">${esc(d.hint || '未找到相关用户，换个关键词试试。')}</div>`; return; }
+  for (const u of users) {
+    const row = document.createElement('div');
+    row.className = 'row userrow';
+    const badge = u.verify ? `<span class="badge b-verify">${esc(u.verify)}</span>` : '';
+    const uid = u.uniqueId ? `<span>抖音号：${esc(u.uniqueId)}</span>` : '';
+    const fans = u.followerCount ? `<span>${u.followerText ? esc(u.followerText) : fmtNum(u.followerCount) + ' 粉丝'}</span>` : '';
+    const like = u.totalFavorited ? `<span>${fmtNum(u.totalFavorited)} 获赞</span>` : '';
+    const sign = u.signature ? `<div class="sub" title="${esc(u.signature)}" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">${esc(u.signature)}</div>` : '';
+    row.innerHTML = `
+      ${u.avatar ? `<img class="avatar" loading="lazy" src="/api/img?u=${encodeURIComponent(u.avatar)}" onerror="this.style.visibility='hidden'">` : '<div class="avatar"></div>'}
+      <div class="info">
+        <div class="desc" title="${esc(u.nickname)}">${esc(u.nickname)} ${badge}</div>
+        <div class="sub">${uid}${fans}${like}</div>
+        ${sign}
+      </div>
+      <button class="ghost" data-sec="${esc(u.secUid)}">查看作品</button>`;
+    row.addEventListener('click', (e) => { if (e.target.closest('button')) return; collect(u.secUid); });
+    row.querySelector('button').onclick = (e) => { e.stopPropagation(); collect(u.secUid); };
+    box.appendChild(row);
+  }
+  switchTab('results');
+}
+
+// 仅重算本地状态(下载完成后), 不重新抓取
+async function refreshLocal() {
+  try {
+    const d = await (await fetch('/api/refresh')).json();
+    if (d.ok && !d.empty) applyWorks(d);
+  } catch {}
+}
+
+// 页面加载时: 仅当本标签页已有会话(即刷新)才恢复上次结果; 新开/首次打开则为空
+async function loadState() {
+  if (!sessionStorage.getItem('dy-session')) { sessionStorage.setItem('dy-session', '1'); return; }
+  try {
+    const d = await (await fetch('/api/state')).json();
+    if (d.ok && !d.empty) { applyWorks(d); $('#meta').textContent += '（已恢复上次结果）'; }
+  } catch {}
+}
+
+async function download() {
+  const ids = selectedIds();
+  if (!ids.length) { alert('请先勾选要下载的作品'); return; }
+  await downloadByIds(ids);
+}
+async function downloadQueue() {
+  if (!state.queueIds.length) { alert('编队为空'); return; }
+  await downloadByIds(state.queueIds.slice());
+}
+function currentModes() {
+  const m = [];
+  if ($('#modeRaw').checked) m.push('raw');
+  if ($('#modeCompose').checked) m.push('compose');
+  return m.length ? m : ['raw'];
+}
+async function downloadByIds(ids) {
+  $('#log').textContent = '';
+  $('#btnStop').style.display = 'none';
+  const r = await fetch('/api/download', { method:'POST', headers:{'content-type':'application/json'},
+    body: JSON.stringify({ ids, quality: parseInt($('#quality').value,10)||0, bgm:true, sort: $('#sort').value,
+      modes: currentModes(), interval: parseFloat($('#interval').value)||undefined }) });
+  const d = await r.json();
+  if (!d.ok) { setStatus('fail'); $('#ptext').textContent = '启动失败：' + d.error; switchTab('status'); return; }
+  setStatus('run');
+  switchTab('status'); // 自动切到下载状态
+  poll();
+}
+
+// 下载状态指示点: idle / run / done / fail
+function setStatus(s) {
+  $('#sdot').className = 'cnt' + (s === 'idle' ? '' : ' ' + s);
+}
+
+// 右下角弹窗提示; 点击可关闭, 6 秒后自动消失
+function toast(title, sub, kind) {
+  const el = document.createElement('div');
+  el.className = 'toast ' + (kind || '');
+  el.innerHTML = `<div class="t-title">${esc(title)}</div>` + (sub ? `<div class="t-sub">${esc(sub)}</div>` : '');
+  el.onclick = () => el.remove();
+  $('#toasts').appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 6000);
+}
+
+async function poll() {
+  const d = await (await fetch('/api/job')).json();
+  const j = d.job;
+  const pct = j.total ? Math.round(j.done / j.total * 100) : 0;
+  const sum = k => (j.results||[]).reduce((s, r) => s + (r[k] || 0), 0);
+  const ok = sum('ok'), skip = sum('skip'), fail = sum('fail');
+  $('#ptext').textContent = `${j.running ? '下载中' : (j.stopped ? '已停止' : '完成')} ${j.done}/${j.total}`;
+  $('#pbar').style.width = pct + '%';
+  $('#btnStop').style.display = j.running ? '' : 'none';
+  const lines = (j.results||[]).map(r => `[${r.id}] ok=${r.ok} skip=${r.skip} fail=${r.fail}${r.error?' ('+r.error+')':''}`);
+  $('#log').textContent = lines.join('\n') + '\n' + (j.log||[]).filter(x=>x!=='__DONE__').slice(-20).join('\n');
+  if (j.running) { setStatus('run'); setTimeout(poll, 800); }
+  else {
+    setStatus(fail > 0 ? 'fail' : 'done');
+    const title = j.stopped ? '下载已停止' : (fail > 0 ? '下载完成（部分失败）' : '下载完成');
+    toast(title, `新增 ${ok} · 跳过 ${skip} · 失败 ${fail}`, fail > 0 ? 'fail' : 'ok');
+    refreshLocal();
+  }
+}
+
+// 页面加载时还原下载状态指示点(可能上次任务仍/已结束)
+async function loadJob() {
+  try {
+    const j = (await (await fetch('/api/job')).json()).job;
+    if (!j || !j.total) return;
+    if (j.running) { setStatus('run'); poll(); switchTab('status'); }
+    else { setStatus((j.results||[]).some(r => r.fail > 0) ? 'fail' : 'done'); }
+  } catch {}
+}
+
+// ---------- 下载目录 / 合成设置(默认下载地址) ----------
+async function loadConfig() {
+  try {
+    const d = await (await fetch('/api/config')).json();
+    if (!d.ok) return;
+    $('#outdir').value = d.out || '';
+    $('#ffmpeg').value = d.ffmpeg || d.ffmpegResolved || ''; // 预填: 优先已存值, 否则用自动探测到的路径
+    if (d.interval) $('#interval').value = d.interval;
+    if (d.collectTimeout) $('#ctimeout').value = d.collectTimeout;
+    $('#ffMsg').textContent = d.ffmpegResolved ? (d.ffmpeg ? '已探测: ' + d.ffmpegResolved : '已自动填入探测到的路径') : '未找到 ffmpeg';
+    renderLogin(d);
+  } catch {}
+}
+// ---------- 登录态 ----------
+let meRetry = 0;
+function renderLogin(d) {
+  const on = !!d.loggedIn;
+  const m = d.me;
+  if (on && m && m.nickname) {
+    const av = m.avatar ? `<img class="avatar-sm" src="/api/img?u=${encodeURIComponent(m.avatar)}" onerror="this.style.display='none'">` : '';
+    $('#loginMsg').innerHTML = `${av}<span>已登录：<b>${esc(m.nickname)}</b>${m.uniqueId ? `（抖音号 ${esc(m.uniqueId)}）` : ''}</span><span class="meta">· ${d.cookieCount || 0} 条 Cookie</span>`;
+    meRetry = 0;
+  } else if (on) {
+    // 已登录但还没拿到用户资料 -> 稍后重试拉取
+    $('#loginMsg').textContent = `已登录（${d.cookieCount || 0} 条 Cookie，识别用户中…）`;
+    if (meRetry < 5) { meRetry++; setTimeout(refreshLogin, 2500); }
+  } else {
+    $('#loginMsg').textContent = d.cookieCount ? `已导入 ${d.cookieCount} 条，未含登录 Cookie` : '未登录（搜索需登录）';
+    meRetry = 0;
+  }
+  $('#btnLogout').style.display = on || d.cookieCount ? '' : 'none';
+}
+async function refreshLogin() { try { renderLogin(await (await fetch('/api/login')).json()); } catch {} }
+async function doImportCookies() {
+  const data = $('#ckText').value.trim();
+  if (!data) { $('#ckMsg').textContent = '请粘贴 Cookie 内容'; return; }
+  $('#ckMsg').textContent = '导入中…';
+  try {
+    const d = await (await fetch('/api/cookies', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ data }) })).json();
+    if (d.ok) {
+      const names = (d.keyCookies || []).join('、') || '（未识别到关键项）';
+      const ok = d.loggedIn;
+      const who = d.me && d.me.nickname ? `，账号：${d.me.nickname}` : '';
+      $('#ckMsg').innerHTML = ok
+        ? `✅ 识别成功：共 ${d.imported} 条 Cookie，已登录${esc(who)}<br>关键项：${esc(names)}`
+        : `⚠️ 已导入 ${d.imported} 条，但未含 sessionid，可能未生效<br>关键项：${esc(names)}`;
+      renderLogin(d);
+      toast(ok ? '✅ Cookie 识别成功' : '⚠️ Cookie 已导入（未登录）', ok && d.me ? `账号：${d.me.nickname} · 共 ${d.imported} 条` : `共 ${d.imported} 条 · 关键项：${names}`, ok ? 'ok' : '');
+      setTimeout(closeCkDlg, ok ? 1600 : 2600);
+    } else $('#ckMsg').textContent = '失败：' + d.error;
+  } catch (e) { $('#ckMsg').textContent = '请求异常：' + e.message; }
+}
+async function doEdgeLogin() {
+  $('#loginMsg').textContent = '正在打开浏览器，请在窗口中扫码登录…';
+  try {
+    const d0 = await (await fetch('/api/login', { method:'POST' })).json();
+    if (!d0.ok) { $('#loginMsg').textContent = '失败：' + d0.error; return; }
+    const poll = async () => {
+      try {
+        const d = await (await fetch('/api/login')).json();
+        if (d.state === 'ok') { renderLogin(d); toast('登录成功'); return; }
+        if (d.state === 'timeout' || d.state === 'error') { $('#loginMsg').textContent = '登录失败：' + (d.error || '未知'); return; }
+        $('#loginMsg').textContent = d.state === 'waiting' ? '等待扫码登录…（登录成功后自动保存）' : '正在打开浏览器…';
+        setTimeout(poll, 1500);
+      } catch { setTimeout(poll, 2000); }
+    };
+    poll();
+  } catch (e) { $('#loginMsg').textContent = '请求异常：' + e.message; }
+}
+async function doEdgeImport() {
+  const msg = $('#loginMsg');
+  msg.textContent = '正在检测 Edge…';
+  try {
+    const st = await (await fetch('/api/edge-status')).json();
+    if (st.edgeRunning) {
+      if (!confirm('检测到 Edge 正在运行。\n请完全关闭 Edge（包括后台进程）后再导入，否则无法读取登录态。\n\n已关闭？点“确定”继续尝试，点“取消”放弃。')) { msg.textContent = '已取消'; return; }
+    }
+    msg.textContent = '正在从 Edge 读取登录态…';
+    const d = await (await fetch('/api/edge-import', { method:'POST' })).json();
+    if (d.ok) { msg.textContent = `已从 Edge（${d.profile}）导入 ${d.imported} 条 Cookie`; renderLogin(d); toast('已从 Edge 导入登录态'); }
+    else if (d.needCloseEdge) { msg.textContent = '请先完全关闭 Edge 后重试'; alert(d.error); }
+    else { msg.textContent = '导入失败'; alert(d.error); }
+  } catch (e) { msg.textContent = '请求异常：' + e.message; }
+}
+async function doLogout() {
+  if (!confirm('确定要退出登录（清除本地 Cookie）吗？')) return;
+  try { renderLogin(await (await fetch('/api/logout', { method:'POST' })).json()); } catch {}
+}
+function openCkDlg() { $('#ckText').value = ''; $('#ckMsg').textContent = ''; $('#ckMask').classList.add('show'); }
+function closeCkDlg() { $('#ckMask').classList.remove('show'); }
+// 保存全部设置(下载目录 + ffmpeg + 每图停留 + 采集超时)
+async function persistCfg() {
+  const out = $('#outdir').value.trim();
+  if (!out) { $('#cfgMsg').textContent = '目录不能为空'; return; }
+  $('#cfgMsg').textContent = '保存中…';
+  try {
+    const body = {
+      out,
+      ffmpeg: $('#ffmpeg').value.trim(),
+      interval: parseFloat($('#interval').value) || undefined,
+      collectTimeout: parseInt($('#ctimeout').value, 10) || undefined,
+    };
+    const d = await (await fetch('/api/config', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) })).json();
+    if (d.ok) {
+      $('#cfgMsg').textContent = '已保存';
+      $('#ffMsg').textContent = d.ffmpegResolved ? '已探测: ' + d.ffmpegResolved : '未找到 ffmpeg';
+      $('#outdir').value = d.out || out;
+      refreshLocal();
+    } else $('#cfgMsg').textContent = '失败：' + d.error;
+  } catch (e) { $('#cfgMsg').textContent = '请求异常：' + e.message; }
+}
+// 打开本机资源管理器选择文件夹
+async function pickOut() {
+  $('#cfgMsg').textContent = '等待选择…（请在弹出的窗口中选择）';
+  try {
+    const d = await (await fetch('/api/pick-dir', { method:'POST' })).json();
+    if (d.ok) { const o = await persistOut(d.out); if (o) $('#outdir').value = o; }
+    else { $('#cfgMsg').textContent = '已取消'; }
+  } catch (e) { $('#cfgMsg').textContent = '请求异常：' + e.message; }
+}
+async function persistOut(out) {
+  if (!out) { $('#cfgMsg').textContent = '目录不能为空'; return null; }
+  $('#cfgMsg').textContent = '保存中…';
+  try {
+    const d = await (await fetch('/api/config', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ out }) })).json();
+    if (d.ok) { $('#cfgMsg').textContent = '已保存'; refreshLocal(); return d.out; }
+    $('#cfgMsg').textContent = '失败：' + d.error; return null;
+  } catch (e) { $('#cfgMsg').textContent = '请求异常：' + e.message; return null; }
+}
+
+// ---------- 下载编队(跨用户攒作品一起下) ----------
+async function loadQueue() {
+  try { const d = await (await fetch('/api/queue')).json(); if (d.ok) { state.queueIds = d.queue.map(x=>x.id); renderQueue(d); } } catch {}
+}
+function renderQueue(d) {
+  const items = d.queue || [];
+  $('#qcount').textContent = items.length;
+  const box = $('#qlist'); box.innerHTML = '';
+  if (!items.length) {
+    box.innerHTML = '<div class="qempty">编队为空。在「检索结果」勾选作品后点「加入编队」。</div>';
+    return;
+  }
+  for (const it of items) {
+    const el = document.createElement('div');
+    el.className = 'qitem';
+    el.innerHTML = `
+      <span class="qau">@${esc(it.author||'未知')}</span>
+      <span class="badge b-${it.type}">${TYPE_TXT[it.type]||''}</span>
+      <span class="qdesc" title="${esc(it.desc)}">${esc(it.desc)||'(无文案)'}</span>
+      <button class="ghost" data-id="${it.id}">移除</button>`;
+    el.querySelector('button').onclick = () => queueAction('remove', [it.id]);
+    box.appendChild(el);
+  }
+}
+async function queueAction(action, ids) {
+  const d = await (await fetch('/api/queue', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ action, ids }) })).json();
+  if (d.ok) { state.queueIds = d.queue.map(x=>x.id); renderQueue(d); }
+}
+function addToQueue() {
+  const ids = selectedIds();
+  if (!ids.length) { alert('请先勾选要加入编队的作品'); return; }
+  queueAction('add', ids);
+}
+
+$('#btnGo').onclick = () => { const v = $('#input').value.trim(); if (v) collect(v); };
+$('#input').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnGo').click(); });
+document.querySelectorAll('#searchMode button').forEach(b => {
+  b.onclick = () => {
+    searchMode = b.dataset.mode;
+    document.querySelectorAll('#searchMode button').forEach(x => x.classList.toggle('on', x === b));
+    $('#input').placeholder = searchMode === 'id'
+      ? '输入抖音号（如 62346747626）搜索'
+      : '粘贴链接 / sec_uid / aweme_id，或输入用户名关键词搜索';
+  };
+});
+$('#sort').addEventListener('change', renderWorks);
+$('#btnAll').onclick = () => { state.works.forEach(w => state.selected.add(w.id)); renderWorks(); };
+$('#btnNone').onclick = () => { state.selected.clear(); renderWorks(); };
+$('#btnTodo').onclick = () => {
+  state.selected.clear();
+  state.works.forEach(w => { if (w.local.status !== 'done') state.selected.add(w.id); });
+  renderWorks();
+};
+// ---------- 选项卡切换(默认: 检索结果) ----------
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tabsection').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
+  $('#rbar').style.display = (name === 'results') ? '' : 'none'; // 排序栏仅检索结果可见
+}
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+
+// ---------- 固定区折叠 ----------
+function applyCollapse(collapsed) {
+  document.querySelector('.stickytop').classList.toggle('collapsed', collapsed);
+  $('#btnCollapse').textContent = collapsed ? '展开 ▼' : '收起 ▲';
+  try { localStorage.setItem('topCollapsed', collapsed ? '1' : '0'); } catch {}
+}
+$('#btnCollapse').onclick = () =>
+  applyCollapse(!document.querySelector('.stickytop').classList.contains('collapsed'));
+applyCollapse(localStorage.getItem('topCollapsed') === '1');
+
+$('#btnDl').onclick = download;
+$('#btnAddQ').onclick = addToQueue;
+$('#btnQClear').onclick = () => queueAction('clear', []);
+$('#btnQDl').onclick = downloadQueue;
+$('#btnSaveCfg').onclick = persistCfg;
+$('#btnCancel').onclick = async () => {
+  $('#meta').textContent = '取消中…';
+  try { await fetch('/api/cancel', { method:'POST' }); } catch {}
+};
+$('#btnPickOut').onclick = pickOut;
+$('#outdir').addEventListener('keydown', e => { if (e.key === 'Enter') persistCfg(); });
+$('#ffmpeg').addEventListener('keydown', e => { if (e.key === 'Enter') persistCfg(); });
+$('#interval').addEventListener('keydown', e => { if (e.key === 'Enter') persistCfg(); });
+$('#ctimeout').addEventListener('keydown', e => { if (e.key === 'Enter') persistCfg(); });
+$('#btnStop').onclick = async () => { $('#btnStop').disabled = true; await fetch('/api/stop', { method:'POST' }); $('#btnStop').disabled = false; };
+$('#btnImportCookies').onclick = openCkDlg;
+$('#btnEdgeImport').onclick = doEdgeImport;
+$('#btnEdgeLogin').onclick = doEdgeLogin;
+$('#btnLogout').onclick = doLogout;
+$('#ckOk').onclick = doImportCookies;
+$('#ckCancel').onclick = closeCkDlg;
+$('#ckMask').onclick = (e) => { if (e.target.id === 'ckMask') closeCkDlg(); };
+
+// ---------- 主题(昼夜) ----------
+function applyTheme(t) {
+  document.documentElement.dataset.theme = (t === 'light' ? 'light' : 'dark');
+  try { localStorage.setItem('theme', t); } catch {}
+  $('#btnTheme').textContent = (t === 'light' ? '日间' : '夜间');
+}
+$('#btnTheme').onclick = () => applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light');
+applyTheme(localStorage.getItem('theme') === 'light' ? 'light' : 'dark');
+
+loadConfig();
+loadQueue();
+loadState();
+loadJob();
+refreshLogin();
+</script>
+
+<div id="ckMask" class="mask">
+  <div class="dialog">
+    <h3>导入 Cookie</h3>
+    <div class="hint">
+      支持三种格式，任选其一粘贴：<br>
+      1）浏览器插件（如 Cookie-Editor）导出的 JSON 数组；<br>
+      2）Playwright storageState 的 JSON（含 cookies 字段）；<br>
+      3）原始 Cookie 字符串 <code>a=b; c=d</code>（需在抖音页面复制完整 Cookie，含 sessionid）。<br>
+      导入后即复用该登录态进行用户名搜索与采集。
+    </div>
+    <textarea id="ckText" placeholder="在此粘贴 Cookie 内容…"></textarea>
+    <div class="dlgfoot">
+      <span id="ckMsg" class="meta"></span>
+      <span class="sp"></span>
+      <button class="ghost" id="ckCancel">取消</button>
+      <button id="ckOk">导入</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

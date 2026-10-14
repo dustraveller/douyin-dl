@@ -1,0 +1,20 @@
+# 依赖
+node_modules/
+
+# 登录态（含 Cookie，切勿提交）
+cookies.json
+edge-profile/
+
+# 采集缓存与下载记录（含隐私数据）
+cache.json
+
+# 下载的媒体文件
+downloads/
+
+# 本地机器配置（含绝对路径，首次运行会自动生成）
+config.json
+
+# 日志与临时输出
+*.log
+server.err
+demo_out.json
