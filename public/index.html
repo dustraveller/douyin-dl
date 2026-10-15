@@ -5,135 +5,314 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>抖音作品下载</title>
 <style>
-  :root { --bg:#111319; --card:#1b1f2a; --line:#2a3040; --fg:#e6e8ee; --mut:#8b93a7; --acc:#4c8dff; --ok:#37c871; --warn:#f0a020; --hover:#3a4460; --thumb:#0c0e13; }
-  html[data-theme="light"] { --bg:#f4f5f7; --card:#ffffff; --line:#dfe3ea; --fg:#1b1f27; --mut:#6b7280; --acc:#2f6fe0; --ok:#1f9d55; --warn:#c47f0a; --hover:#b9c2d0; --thumb:#e6e8ee; }
-  * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.5 system-ui,"Segoe UI",Microsoft YaHei,sans-serif; }
-  .wrap { max-width:1180px; margin:0 auto; padding:0 20px; }
-  .stickytop { position:sticky; top:0; z-index:30; background:var(--bg); border-bottom:1px solid var(--line); box-shadow:0 4px 12px rgba(0,0,0,.12); }
-  header { padding:14px 0; border-bottom:1px solid var(--line); display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-  .stickytop .tabs { margin:0; padding:4px 0 0; }
-  .stickytop .rbar { padding:10px 0; margin:0; }
-  h1 { font-size:16px; margin:0 12px 0 0; font-weight:600; }
-  input[type=text] { flex:1; min-width:260px; padding:9px 12px; background:var(--card); border:1px solid var(--line); border-radius:8px; color:var(--fg); }
-  button { padding:9px 14px; background:var(--acc); color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:13px; }
-  button.ghost { background:var(--card); border:1px solid var(--line); color:var(--fg); }
-  button:disabled { opacity:.45; cursor:not-allowed; }
-  .seg { display:inline-flex; flex:0 0 auto; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
-  .seg button { background:var(--card); color:var(--mut); border-radius:0; padding:9px 12px; }
-  .seg button.on { background:var(--acc); color:#fff; }
+  /* ============================================================
+     Douyin Archive · 档案库
+     墨黑纸白 / 朱红单点强调 / 衬线标题 + 等宽数据 / 发丝线版面
+     ============================================================ */
+  :root {
+    --bg:#0b0b0d; --card:#101013; --card2:#151519; --sunken:#08080a;
+    --line:#26262d; --line2:#33333c; --hover:#3a3a44;
+    --fg:#ece7dd; --mut:#8a8578; --dim:#5d5951;
+    --acc:#fe2c55; --acc-fg:#ffffff; --acc-soft:rgba(254,44,85,.10);
+    --ok:#7ddba1; --warn:#e9b04a; --err:#ff5d6c; --cool:#6f9fb0;
+    --thumb:#131317;
+    --f-display:"Segoe UI",system-ui,-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+    --f-mono:"Segoe UI",system-ui,-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+    --shadow:0 4px 14px -8px rgba(0,0,0,.5);
+  }
+  html[data-theme="light"] {
+    --bg:#f4f1e9; --card:#fbf9f4; --card2:#efebe1; --sunken:#eae5da;
+    --line:#ddd6c6; --line2:#cbc3b1; --hover:#b8b0a0;
+    --fg:#15140f; --mut:#6d685c; --dim:#9a948a;
+    --acc:#d81e42; --acc-fg:#ffffff; --acc-soft:rgba(216,30,66,.08);
+    --ok:#1c8b52; --warn:#9a6a05; --err:#cf1636; --cool:#3d6b7d;
+    --thumb:#e7e2d6;
+    --shadow:0 4px 14px -8px rgba(30,25,15,.25);
+  }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body {
+    margin:0; color:var(--fg);
+    font:14px/1.6 var(--f-mono);
+    background-color:var(--bg);
+    min-height:100vh;
+  }
+  ::selection { background:color-mix(in srgb, var(--acc) 34%, transparent); color:var(--fg); }
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--line2); border:3px solid transparent; background-clip:content-box; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--hover); background-clip:content-box; }
+
+  .wrap { max-width:1180px; margin:0 auto; padding:0 26px; }
+
+  /* ---------- 顶部固定区 ---------- */
+  .stickytop {
+    position:sticky; top:0; z-index:30;
+    background:color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+
+  header { padding:16px 0; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .stickytop .tabs { margin:0; }
+
+  /* 报头字标 */
+  h1 { display:flex; align-items:center; gap:10px; margin:0 16px 0 0; }
+  h1 .brand-mark { width:10px; height:10px; flex:0 0 auto; background:var(--acc); }
+  h1 .brand-text { display:flex; flex-direction:column; line-height:1.15; }
+  h1 .brand-word { font-family:var(--f-display); font-size:19px; font-weight:600; white-space:nowrap; }
+  h1 .brand-word em { font-style:normal; }
+  h1 .brand-cn { font-size:11px; color:var(--mut); margin-top:1px; }
+
+  /* ---------- 表单控件 ---------- */
+  input[type=text], input[type=number], select, textarea {
+    background:var(--card2); border:1px solid var(--line); border-radius:0;
+    color:var(--fg); font-family:var(--f-mono); font-size:12.5px; outline:none;
+    transition:border-color .16s ease, box-shadow .16s ease, background .16s ease;
+  }
+  input[type=text]::placeholder, textarea::placeholder { color:var(--dim); }
+  input[type=text]:focus, input[type=number]:focus, select:focus, textarea:focus {
+    border-color:var(--acc); background:var(--bg);
+    box-shadow:inset 3px 0 0 var(--acc);
+  }
+  #input { flex:1; min-width:250px; padding:10px 13px; }
+  input[type=checkbox] { accent-color:var(--acc); width:14px; height:14px; cursor:pointer; }
+  select { padding:8px 10px; cursor:pointer; }
+  input[type=number] { padding:8px 10px; }
+
+  button {
+    font-family:var(--f-mono); text-transform:uppercase; letter-spacing:.1em;
+    padding:10px 16px; border:1px solid transparent; border-radius:0; cursor:pointer;
+    font-size:11px; font-weight:600;
+    background:var(--acc); color:var(--acc-fg);
+    transition:transform .1s ease, background .18s ease, color .18s ease, border-color .18s ease, box-shadow .2s ease;
+  }
+  button:hover:not(:disabled) { filter:brightness(1.06); }
+  button:active:not(:disabled) { transform:translateY(1px); }
+  button:disabled { opacity:.38; cursor:not-allowed; }
+  button.ghost {
+    background:transparent; color:var(--fg); border-color:var(--line2); font-weight:500;
+  }
+  button.ghost:hover:not(:disabled) {
+    color:var(--acc); border-color:var(--acc); background:var(--acc-soft); box-shadow:none;
+  }
+
+  /* 分段控件 */
+  .seg { display:inline-flex; flex:0 0 auto; border:1px solid var(--line2); background:var(--card2); }
+  .seg button, .seg button.ghost {
+    background:transparent; border:none; border-radius:0; color:var(--mut);
+    padding:10px 14px; font-weight:600; box-shadow:none;
+  }
+  .seg button:hover:not(.on) { color:var(--fg); background:color-mix(in srgb, var(--fg) 6%, transparent); }
+  .seg button.on { background:var(--acc); color:var(--acc-fg); }
+  .seg button + button { border-left:1px solid var(--line2); }
+
   main { padding:0; }
-  main .wrap { padding-top:16px; padding-bottom:40px; }
-  .bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+  main .wrap { padding-top:22px; padding-bottom:72px; }
+  .bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
   .bar .sp { flex:1; }
-  .meta { color:var(--mut); font-size:13px; }
-  .list { display:flex; flex-direction:column; gap:8px; }
-  .row { display:flex; gap:12px; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px; cursor:pointer; user-select:none; }
-  .row:hover { border-color:var(--hover); }
+  .sp { flex:1; }
+  .meta { color:var(--mut); font-size:11.5px; letter-spacing:.02em; }
+  .sep { border-left:1px solid var(--line); padding-left:13px; margin-left:5px; }
+
+  /* ---------- 检索结果（网格） ---------- */
+  .list { display:grid; grid-template-columns:repeat(auto-fill,minmax(var(--gridw,220px),1fr)); gap:16px; }
+  .row {
+    position:relative; display:flex; flex-direction:column;
+    border:1px solid var(--line); background:var(--card);
+    cursor:pointer; user-select:none; overflow:hidden;
+    transition:border-color .18s ease;
+  }
+  .row:hover { border-color:var(--line2); }
   .row.sel { border-color:var(--acc); }
-  .pick { pointer-events:none; flex:0 0 auto; }
-  .open { flex:0 0 auto; font-size:12px; text-decoration:none; white-space:nowrap; padding:5px 9px; border:1px solid var(--line); border-radius:8px; color:var(--mut); }
-  .open:hover { border-color:var(--acc); color:var(--fg); }
-  select { padding:6px 8px; background:var(--card); border:1px solid var(--line); border-radius:8px; color:var(--fg); }
-  input[type=number] { padding:6px 8px; background:var(--card); border:1px solid var(--line); border-radius:8px; color:var(--fg); }
-  .chk { display:inline-flex; align-items:center; gap:5px; color:var(--fg); font-size:13px; cursor:pointer; }
-  .thumb { width:54px; height:72px; object-fit:cover; border-radius:6px; background:var(--thumb); flex:0 0 auto; }
-  .avatar { width:56px; height:56px; border-radius:50%; object-fit:cover; background:var(--thumb); flex:0 0 auto; }
-  #loginMsg { display:inline-flex; align-items:center; gap:6px; }
-  .avatar-sm { width:22px; height:22px; border-radius:50%; object-fit:cover; background:var(--thumb); vertical-align:middle; }
-  .b-verify { color:#ffb454; border-color:#7a5a2f; }
-  #rbar.searchmode > *:not(#meta):not(.sp) { display:none; }
-  .info { flex:1; min-width:0; }
-  .desc { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .sub { color:var(--mut); font-size:12px; margin-top:3px; display:flex; gap:10px; flex-wrap:wrap; }
-  .badge { font-size:11px; padding:1px 7px; border-radius:20px; border:1px solid var(--line); }
-  .b-video { color:#7db4ff; border-color:#2f4a7a; }
-  .b-images { color:#c79bff; border-color:#4a3a7a; }
-  .b-mixed { color:#ffb36b; border-color:#7a5a2f; }
-  .s-done { color:var(--ok); border-color:#245a37; }
-  .s-partial { color:var(--warn); border-color:#6a4d16; }
-  .s-missing { color:var(--mut); }
-  html[data-theme="light"] .b-video { color:#2f6fe0; border-color:#b9d0f5; }
-  html[data-theme="light"] .b-images { color:#8a4fe0; border-color:#ddc8f5; }
-  html[data-theme="light"] .b-mixed { color:#c47f0a; border-color:#f0d9a8; }
-  html[data-theme="light"] .s-done { color:#1f9d55; border-color:#bfe3cd; }
-  html[data-theme="light"] .s-partial { color:#c47f0a; border-color:#f0d9a8; }
+  .row::before {
+    content:""; position:absolute; left:0; top:0; right:0; height:2px; background:var(--acc);
+    transform:scaleX(0); transform-origin:left; transition:transform .22s cubic-bezier(.2,.8,.2,1);
+  }
+  .row.sel::before { transform:scaleX(1); }
+  .pick { position:absolute; top:8px; left:8px; z-index:2; width:16px; height:16px; accent-color:var(--acc); }
+  .thumb { display:block; width:100%; aspect-ratio:3/4; background:var(--thumb); border-bottom:1px solid var(--line); overflow:hidden; }
+  .thumb img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .3s ease; }
+  .row:hover .thumb img { transform:scale(1.04); }
+  .avatar { width:56px; height:56px; object-fit:cover; background:var(--thumb); border:1px solid var(--line); border-radius:50%; flex:0 0 auto; }
+  .avatar-sm { width:20px; height:20px; object-fit:cover; background:var(--thumb); border:1px solid var(--line); border-radius:50%; vertical-align:middle; }
+  #loginMsg { display:inline-flex; align-items:center; gap:7px; }
+  .info { padding:10px 12px 12px; min-width:0; }
+  .desc { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-weight:500; color:var(--fg); line-height:1.45; min-height:2.9em; }
+  .sub { color:var(--mut); font-size:11.5px; margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  /* 用户搜索结果：横向列表，占满整行 */
+  .row.userrow { flex-direction:row; align-items:center; gap:14px; padding:11px 14px; grid-column:1/-1; }
+  .row.userrow .info { flex:1; padding:0; }
+
+  .badge {
+    font-size:9.5px; font-weight:600; letter-spacing:.12em; text-transform:uppercase;
+    padding:2px 7px; white-space:nowrap; border:1px solid var(--line2); color:var(--mut);
+  }
+  .b-video  { color:var(--acc);  border-color:color-mix(in srgb, var(--acc) 55%, transparent);  background:var(--acc-soft); }
+  .b-images { color:var(--cool); border-color:color-mix(in srgb, var(--cool) 50%, transparent); }
+  .b-mixed  { color:var(--warn); border-color:color-mix(in srgb, var(--warn) 50%, transparent); }
+  .b-verify { color:var(--warn); border-color:color-mix(in srgb, var(--warn) 50%, transparent); }
+  .s-done    { color:var(--ok);   border-color:color-mix(in srgb, var(--ok) 50%, transparent); }
+  .s-partial { color:var(--warn); border-color:color-mix(in srgb, var(--warn) 50%, transparent); }
+  .s-missing { color:var(--dim); }
   .btn-author { margin-left:6px; }
-  .cfgcard { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px; display:flex; flex-direction:column; gap:10px; }
-  .cfgrow { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .cfglabel { flex:0 0 64px; color:var(--mut); font-size:13px; }
+
+  /* ---------- 设置面板（账目式） ---------- */
+  .cfgcard { display:flex; flex-direction:column; }
+  .cfgrow { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:11px 0; border-top:1px solid var(--line); }
+  .cfgrow:first-child { border-top:none; }
+  .cfglabel {
+    flex:0 0 74px; color:var(--mut); font-size:10px; letter-spacing:.2em; text-transform:uppercase;
+  }
   .cfgctl { display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex:1; min-width:0; }
-  .cfgctl input[type=text] { flex:1; min-width:200px; padding:7px 10px; }
-  .cfgctl input[type=number].num { width:72px; flex:none; min-width:0; }
-  .sep { border-left:1px solid var(--line); padding-left:12px; margin-left:4px; }
-  .mask { position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:100; }
-  .mask.show { display:flex; }
-  .dialog { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; width:min(560px,92vw); box-shadow:0 16px 48px rgba(0,0,0,.5); }
-  .dialog h3 { margin:0 0 8px; font-size:15px; }
-  .dialog .hint { color:var(--mut); font-size:12px; line-height:1.6; margin-bottom:10px; }
-  .dialog textarea { width:100%; height:180px; resize:vertical; background:var(--bg); border:1px solid var(--line); border-radius:8px; color:var(--fg); padding:10px; font-family:ui-monospace,Consolas,monospace; font-size:12px; box-sizing:border-box; }
-  .dialog .dlgfoot { display:flex; align-items:center; gap:10px; margin-top:10px; }
-  .dialog .dlgfoot .sp { flex:1; }
-  .tabs { display:flex; gap:4px; margin-bottom:12px; border-bottom:1px solid var(--line); }
+  .cfgctl input[type=text] { flex:1; min-width:190px; padding:8px 11px; }
+  .cfgctl input[type=number].num { width:80px; flex:none; min-width:0; }
+  .chk { display:inline-flex; align-items:center; gap:7px; color:var(--fg); font-size:12.5px; cursor:pointer; user-select:none; }
+  .chk:hover { color:var(--acc); }
+
+  /* ---------- 选项卡（章节索引） ---------- */
+  .tabs { display:flex; gap:0; margin-bottom:14px; border-bottom:1px solid var(--line); }
   .tabs .sp { flex:1; }
-  .tabtoggle { background:transparent; border:none; color:var(--mut); padding:8px 10px; font-size:12px; cursor:pointer; align-self:center; }
-  .tabtoggle:hover { color:var(--fg); }
+  .tab {
+    position:relative; background:transparent; border:none; border-radius:0; color:var(--mut);
+    padding:12px 16px; font-size:11px; font-weight:600; letter-spacing:.14em;
+    transition:color .18s ease;
+  }
+  .tab::after {
+    content:""; position:absolute; left:16px; right:16px; bottom:-1px; height:2px; background:var(--acc);
+    transform:scaleX(0); transform-origin:left; transition:transform .24s cubic-bezier(.2,.8,.2,1);
+  }
+  .tab:hover:not(.active) { color:var(--fg); background:transparent; box-shadow:none; transform:none; }
+  .tab:hover:not(.active)::after { transform:scaleX(.34); opacity:.5; }
+  .tab.active { color:var(--fg); }
+  .tab.active::after { transform:scaleX(1); }
+  .tab .cnt {
+    display:inline-block; min-width:17px; text-align:center; font-size:9.5px; font-weight:600;
+    background:transparent; color:var(--mut); border:1px solid var(--line2);
+    padding:0 4px; margin-left:7px; vertical-align:1px;
+  }
+  .tab.active .cnt { background:var(--acc); color:var(--acc-fg); border-color:var(--acc); }
+  #sdot {
+    background:var(--mut); color:transparent; width:8px; height:8px; min-width:0;
+    padding:0; border:none; border-radius:50%; vertical-align:middle; margin-left:9px; overflow:hidden;
+    transition:background .3s;
+  }
+  #sdot.run { background:var(--warn); animation:sdotPulse 1s ease-in-out infinite; box-shadow:0 0 12px var(--warn); }
+  #sdot.done { background:var(--ok); box-shadow:0 0 12px var(--ok); }
+  #sdot.fail { background:var(--err); box-shadow:0 0 12px var(--err); }
+  @keyframes sdotPulse { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+  .tabtoggle {
+    background:transparent; border:none; color:var(--mut); padding:12px 12px; font-size:10px;
+    letter-spacing:.16em; align-self:center; cursor:pointer;
+  }
+  .tabtoggle:hover { color:var(--acc); background:transparent; box-shadow:none; transform:none; }
   .stickytop.collapsed #topform { display:none; }
-  .stickytop.collapsed #rbar { display:none !important; }
-  .tab { background:transparent; border:none; border-bottom:2px solid transparent; border-radius:0; color:var(--mut); padding:8px 14px; font-size:14px; }
-  .tab:hover { color:var(--fg); }
-  .tab.active { color:var(--fg); border-bottom-color:var(--acc); }
-  .tab .cnt { display:inline-block; min-width:18px; text-align:center; font-size:11px; background:var(--line); border-radius:10px; padding:0 6px; margin-left:5px; }
-  .tab.active .cnt { background:var(--acc); color:#fff; }
-  #sdot { background:var(--mut); color:transparent; width:9px; height:9px; min-width:0; padding:0; border-radius:50%; vertical-align:middle; margin-left:7px; overflow:hidden; }
-  #sdot.run { background:var(--warn); animation:sdotPulse 1s ease-in-out infinite; }
-  #sdot.done { background:var(--ok); }
-  #sdot.fail { background:#e0553f; }
-  @keyframes sdotPulse { 0%,100% { opacity:1; } 50% { opacity:.35; } }
+
   .tabsection { display:none; }
-  .tabsection.active { display:block; }
-  .qpanel { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+  .tabsection.active { display:block; animation:reveal .36s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes reveal { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+
+  /* ---------- 下载编队 ---------- */
+  .qpanel { background:var(--card); border:1px solid var(--line); padding:14px 16px; }
   .qhead { display:flex; gap:10px; align-items:center; }
   .qhead .sp { flex:1; }
-  .qlist { margin-top:8px; max-height:60vh; overflow:auto; }
-  .qitem { display:flex; gap:10px; align-items:center; padding:7px 0; border-top:1px solid var(--line); font-size:13px; }
+  .qlist { margin-top:10px; max-height:60vh; overflow:auto; border-top:1px solid var(--line); }
+  .qitem {
+    display:flex; gap:11px; align-items:center; padding:9px 4px 9px 12px;
+    border-bottom:1px solid var(--line); font-size:12.5px; border-left:2px solid transparent;
+    transition:border-color .18s, background .18s;
+  }
+  .qitem:hover { border-left-color:var(--acc); background:var(--acc-soft); }
   .qitem .qdesc { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .qitem .qau { color:var(--mut); flex:0 0 auto; }
+  .qitem .qau { color:var(--acc); font-size:11.5px; flex:0 0 auto; }
   .qitem .badge { flex:0 0 auto; }
-  .qitem button { padding:2px 9px; font-size:12px; }
-  .qempty { color:var(--mut); padding:18px 4px; text-align:center; }
-  #progress { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
-  #log { max-height:220px; overflow:auto; font:12px/1.5 Consolas,monospace; color:var(--mut); white-space:pre-wrap; }
-  .pbar { height:6px; background:var(--thumb); border-radius:3px; overflow:hidden; margin:8px 0; }
-  .pbar > i { display:block; height:100%; width:0; background:var(--acc); transition:width .2s; }
+  .qitem button { padding:4px 10px; font-size:10px; }
+  .qempty { color:var(--dim); padding:26px 4px; text-align:center; font-size:12px; letter-spacing:.06em; }
+
+  /* ---------- 下载状态 ---------- */
+  #progress { background:var(--card); border:1px solid var(--line); padding:15px 17px; }
+  #ptext { font-size:13px; letter-spacing:.08em; text-transform:uppercase; font-weight:600; }
+  .pbar { height:6px; background:var(--sunken); border:1px solid var(--line); overflow:hidden; margin:12px 0; position:relative; }
+  .pbar > i {
+    display:block; height:100%; width:0; background:var(--acc);
+    transition:width .25s ease; box-shadow:0 0 16px -1px var(--acc);
+  }
+  #log {
+    max-height:240px; overflow:auto; font:11.5px/1.7 var(--f-mono); color:var(--mut);
+    white-space:pre-wrap; background:var(--sunken); border:1px solid var(--line); padding:11px 13px;
+  }
   a { color:var(--acc); }
-  #toasts { position:fixed; right:16px; bottom:16px; z-index:100; display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
-  .toast { background:var(--card); border:1px solid var(--line); border-left:3px solid var(--acc); border-radius:10px; padding:10px 14px; box-shadow:0 8px 24px rgba(0,0,0,.32); min-width:220px; max-width:340px; cursor:pointer; animation:toastIn .25s ease; transition:opacity .3s; }
+
+  /* ---------- 提示 ---------- */
+  #toasts { position:fixed; right:20px; bottom:20px; z-index:100; display:flex; flex-direction:column; gap:10px; align-items:flex-end; }
+  .toast {
+    background:var(--card); border:1px solid var(--line); border-left:3px solid var(--acc);
+    padding:12px 16px; box-shadow:var(--shadow); min-width:230px; max-width:350px;
+    cursor:pointer; animation:toastIn .28s cubic-bezier(.2,.8,.3,1); transition:opacity .3s;
+  }
   .toast.ok { border-left-color:var(--ok); }
-  .toast.fail { border-left-color:#e0553f; }
-  .toast .t-title { font-weight:600; }
-  .toast .t-sub { color:var(--mut); font-size:12px; margin-top:3px; }
-  @keyframes toastIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+  .toast.fail { border-left-color:var(--err); }
+  .toast .t-title { font-weight:600; font-size:12px; letter-spacing:.04em; }
+  .toast .t-sub { color:var(--mut); font-size:11px; margin-top:5px; }
+  @keyframes toastIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+
+  /* ---------- 对话框 ---------- */
+  .mask { position:fixed; inset:0; background:rgba(6,6,8,.74); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; z-index:100; }
+  .mask.show { display:flex; animation:reveal .2s ease both; }
+  .dialog {
+    position:relative; background:var(--card); border:1px solid var(--line2); padding:22px;
+    width:min(580px,92vw); box-shadow:var(--shadow);
+  }
+  .dialog::before { content:""; position:absolute; left:0; right:0; top:0; height:2px; background:var(--acc); }
+  .dialog h3 { margin:0 0 12px; font-family:var(--f-display); font-size:17px; font-weight:600; }
+  .dialog .hint { color:var(--mut); font-size:11.5px; line-height:1.8; margin-bottom:13px; }
+  .dialog textarea { width:100%; height:180px; resize:vertical; padding:11px; font-size:11.5px; box-sizing:border-box; }
+  .dialog .dlgfoot { display:flex; align-items:center; gap:10px; margin-top:14px; }
+  .dialog .dlgfoot .sp { flex:1; }
+  .dialog code { font-family:var(--f-mono); background:var(--sunken); border:1px solid var(--line); padding:1px 5px; font-size:11px; }
+
+  /* ---------- 设置抽屉 ---------- */
+  .mask.drawer-mask { align-items:stretch; justify-content:flex-end; }
+  .drawer {
+    position:relative; width:min(430px,94vw); height:100%;
+    background:var(--card); border-left:1px solid var(--line2);
+    box-shadow:var(--shadow); display:flex; flex-direction:column;
+  }
+  .drawer::before { content:""; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--acc); }
+  .drawer-head { display:flex; align-items:center; gap:10px; padding:17px 20px; border-bottom:1px solid var(--line); }
+  .drawer-head .sp { flex:1; }
+  .drawer-title { font-family:var(--f-display); font-size:17px; font-weight:600; }
+  .drawer-body { padding:6px 20px 26px; overflow:auto; }
+
+  /* ---------- 载入动效 ---------- */
+  @media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
+
+  #rbar.searchmode > *:not(#meta):not(.sp) { display:none; }
+
+  @media (max-width:760px) {
+    .wrap { padding:0 16px; }
+    h1 { margin-right:6px; }
+    h1 .brand-word { font-size:17px; }
+    #input { min-width:100%; order:5; }
+    .cfglabel { flex-basis:100%; }
+    .tab { padding:11px 10px; letter-spacing:.08em; }
+  }
 </style>
 <script>try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.dataset.theme='light';}catch(e){}</script>
 </head>
 <body>
 <div id="toasts"></div>
-<div class="stickytop">
-  <div class="wrap">
-    <div id="topform">
-      <header>
-        <h1>抖音作品下载</h1>
-        <input id="input" type="text" placeholder="粘贴链接 / sec_uid / aweme_id，或输入用户名关键词搜索" />
-        <div class="seg" id="searchMode" title="关键词搜索方式">
-          <button type="button" data-mode="name" class="on">用户名</button>
-          <button type="button" data-mode="id">抖音号</button>
-        </div>
-        <button id="btnGo">识别 / 搜索</button>
-        <button class="ghost" id="btnCancel" style="display:none">取消采集</button>
-        <button class="ghost" id="btnTheme" title="切换主题">夜间</button>
-      </header>
 
+<!-- ---------- 设置抽屉（低频配置，默认收起） ---------- -->
+<div id="cfgMask" class="mask drawer-mask">
+  <aside class="drawer" role="dialog" aria-modal="true" aria-label="设置">
+    <div class="drawer-head">
+      <span class="drawer-title">设置</span>
+      <span class="sp"></span>
+      <button class="ghost" id="btnCfgClose">关闭</button>
+    </div>
+    <div class="drawer-body">
       <div id="cfgcard" class="cfgcard">
         <div class="cfgrow">
           <span class="cfglabel">下载目录</span>
@@ -182,6 +361,31 @@
         </div>
       </div>
     </div>
+  </aside>
+</div>
+
+<div class="stickytop">
+  <div class="wrap">
+    <div id="topform">
+      <header>
+        <h1>
+          <span class="brand-mark"></span>
+          <span class="brand-text">
+            <span class="brand-word">Douyin <em>Archive</em></span>
+            <span class="brand-cn">抖音作品下载 · 本地</span>
+          </span>
+        </h1>
+        <input id="input" type="text" placeholder="粘贴链接 / sec_uid / aweme_id，或输入用户名关键词搜索" />
+        <div class="seg" id="searchMode" title="关键词搜索方式">
+          <button type="button" data-mode="name" class="on">用户名</button>
+          <button type="button" data-mode="id">抖音号</button>
+        </div>
+        <button id="btnGo">识别 / 搜索</button>
+        <button class="ghost" id="btnCancel" style="display:none">取消采集</button>
+        <button class="ghost" id="btnCfg" title="设置">设置</button>
+        <button class="ghost" id="btnTheme" title="切换主题">夜间</button>
+      </header>
+    </div>
 
     <div class="tabs">
       <button class="tab active" data-tab="results">检索结果<span id="resCnt" class="cnt">0</span></button>
@@ -190,11 +394,23 @@
       <span class="sp"></span>
       <button class="tabtoggle" id="btnCollapse" title="折叠/展开固定区">收起 ▲</button>
     </div>
+  </div>
+</div>
 
+<main>
+  <div class="wrap">
+  <section id="tab-results" class="tabsection active">
     <div id="rbar" class="bar rbar">
       <span id="meta" class="meta"></span>
       <span id="authorBtnWrap"></span>
       <span class="sp"></span>
+      <span class="meta">类型</span>
+      <select id="typeFilter">
+        <option value="">全部</option>
+        <option value="video">视频</option>
+        <option value="images">图集</option>
+        <option value="mixed">图文</option>
+      </select>
       <span class="meta">排序</span>
       <select id="sort">
         <option value="old">时间 旧→新</option>
@@ -204,18 +420,19 @@
       </select>
       <span class="meta">清晰度</span>
       <input id="quality" type="text" value="" placeholder="最高" style="width:70px;flex:none;min-width:0;padding:6px 8px" />
+      <span class="meta">网格</span>
+      <div class="seg" id="gridSize">
+        <button type="button" data-w="160">小</button>
+        <button type="button" data-w="220" class="on">中</button>
+        <button type="button" data-w="300">大</button>
+      </div>
       <button class="ghost" id="btnAll">全选</button>
       <button class="ghost" id="btnNone">清空</button>
       <button class="ghost" id="btnTodo">只选未完成</button>
       <button class="ghost" id="btnAddQ">加入编队</button>
       <button id="btnDl">下载选中</button>
+      <span id="selCnt" class="meta"></span>
     </div>
-  </div>
-</div>
-
-<main>
-  <div class="wrap">
-  <section id="tab-results" class="tabsection active">
     <div id="list" class="list"></div>
   </section>
 
@@ -241,6 +458,26 @@
   </div>
 </main>
 
+<div id="ckMask" class="mask">
+  <div class="dialog">
+    <h3>导入 Cookie</h3>
+    <div class="hint">
+      支持三种格式，任选其一粘贴：<br>
+      1）浏览器插件（如 Cookie-Editor）导出的 JSON 数组；<br>
+      2）Playwright storageState 的 JSON（含 cookies 字段）；<br>
+      3）原始 Cookie 字符串 <code>a=b; c=d</code>（需在抖音页面复制完整 Cookie，含 sessionid）。<br>
+      导入后即复用该登录态进行用户名搜索与采集。
+    </div>
+    <textarea id="ckText" placeholder="在此粘贴 Cookie 内容…"></textarea>
+    <div class="dlgfoot">
+      <span id="ckMsg" class="meta"></span>
+      <span class="sp"></span>
+      <button class="ghost" id="ckCancel">取消</button>
+      <button id="ckOk">导入</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const $ = s => document.querySelector(s);
 let state = { view:'works', type:null, author:null, works:[], selected:new Set(), queueIds:[] };
@@ -260,7 +497,7 @@ function esc(s){ return String(s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&
 function fmtNum(n){ n=Number(n)||0; if(n>=1e8) return (n/1e8).toFixed(1)+'亿'; if(n>=1e4) return (n/1e4).toFixed(1)+'万'; return String(n); }
 // 作品原地址: 视频→/video/, 图集/图文→/note/
 function srcUrl(w){ return `https://www.douyin.com/${w.type==='video'?'video':'note'}/${w.id}`; }
-function toggleSel(id){ if (state.selected.has(id)) state.selected.delete(id); else state.selected.add(id); }
+function toggleSel(id){ if (state.selected.has(id)) state.selected.delete(id); else state.selected.add(id); updateSelCnt(); }
 
 function applyWorks(d) {
   state.view = 'works';
@@ -283,7 +520,9 @@ function renderWorks() {
   const box = $('#list');
   box.innerHTML = '';
   const cmp = SORTS[$('#sort').value] || SORTS['old'];
-  const works = [...state.works].sort(cmp);
+  const tf = $('#typeFilter').value;
+  const works = [...state.works].filter(w => !tf || w.type === tf).sort(cmp);
+  $('#resCnt').textContent = works.length;
   for (const w of works) {
     const row = document.createElement('div');
     const on = state.selected.has(w.id);
@@ -292,7 +531,9 @@ function renderWorks() {
     const cover = w.cover ? `/api/img?u=${encodeURIComponent(w.cover)}` : '';
     row.innerHTML = `
       <input class="pick" type="checkbox" data-id="${w.id}" ${on ? 'checked' : ''} />
-      ${cover ? `<img class="thumb" loading="lazy" src="${cover}" onerror="this.style.visibility='hidden'">` : '<div class="thumb"></div>'}
+      ${cover
+        ? `<a class="thumb" href="${srcUrl(w)}" target="_blank" rel="noreferrer" title="打开原地址"><img loading="lazy" src="${cover}" onerror="this.style.visibility='hidden'"></a>`
+        : '<span class="thumb"></span>'}
       <div class="info">
         <div class="desc" title="${esc(w.desc)}">${esc(w.desc) || '(无文案)'}</div>
         <div class="sub">
@@ -301,18 +542,23 @@ function renderWorks() {
           <span>${w.date}</span>
           <span class="badge s-${w.local.status}">${ST_TXT[w.local.status]} ${w.local.have}/${w.local.expected}</span>
         </div>
-      </div>
-      <a class="open" href="${srcUrl(w)}" target="_blank" rel="noreferrer" title="打开原地址">原地址 ↗</a>`;
-    // 点击整行(除"原地址"链接外)即切换选中, 不必点复选框
+      </div>`;
+    // 点击封面跳转；点击复选框或整行切换选中
+    const pickEl = row.querySelector('.pick');
     row.addEventListener('click', (e) => {
-      if (e.target.closest('.open')) return;
+      if (e.target.closest('a.thumb')) return;
+      if (e.target.closest('.pick')) return;
       toggleSel(w.id);
-      const sel = state.selected.has(w.id);
-      row.classList.toggle('sel', sel);
-      row.querySelector('.pick').checked = sel;
+      pickEl.checked = state.selected.has(w.id);
+      row.classList.toggle('sel', state.selected.has(w.id));
+    });
+    pickEl.addEventListener('change', () => {
+      toggleSel(w.id);
+      row.classList.toggle('sel', state.selected.has(w.id));
     });
     box.appendChild(row);
   }
+  updateSelCnt();
 }
 
 function selectedIds() { return [...document.querySelectorAll('#list input:checked')].map(i => i.dataset.id); }
@@ -634,6 +880,23 @@ document.querySelectorAll('#searchMode button').forEach(b => {
   };
 });
 $('#sort').addEventListener('change', renderWorks);
+$('#typeFilter').addEventListener('change', renderWorks);
+
+// ---------- 选中计数 ----------
+function updateSelCnt() {
+  const n = state.selected.size;
+  const el = $('#selCnt');
+  if (el) el.textContent = n ? `已选 ${n} 个` : '';
+}
+
+// ---------- 网格大小 ----------
+function applyGrid(w) {
+  document.documentElement.style.setProperty('--gridw', w + 'px');
+  document.querySelectorAll('#gridSize button').forEach(b => b.classList.toggle('on', b.dataset.w === w));
+  try { localStorage.setItem('gridw', w); } catch {}
+}
+document.querySelectorAll('#gridSize button').forEach(b => b.onclick = () => applyGrid(b.dataset.w));
+applyGrid(localStorage.getItem('gridw') || '220');
 $('#btnAll').onclick = () => { state.works.forEach(w => state.selected.add(w.id)); renderWorks(); };
 $('#btnNone').onclick = () => { state.selected.clear(); renderWorks(); };
 $('#btnTodo').onclick = () => {
@@ -696,26 +959,11 @@ loadQueue();
 loadState();
 loadJob();
 refreshLogin();
-</script>
 
-<div id="ckMask" class="mask">
-  <div class="dialog">
-    <h3>导入 Cookie</h3>
-    <div class="hint">
-      支持三种格式，任选其一粘贴：<br>
-      1）浏览器插件（如 Cookie-Editor）导出的 JSON 数组；<br>
-      2）Playwright storageState 的 JSON（含 cookies 字段）；<br>
-      3）原始 Cookie 字符串 <code>a=b; c=d</code>（需在抖音页面复制完整 Cookie，含 sessionid）。<br>
-      导入后即复用该登录态进行用户名搜索与采集。
-    </div>
-    <textarea id="ckText" placeholder="在此粘贴 Cookie 内容…"></textarea>
-    <div class="dlgfoot">
-      <span id="ckMsg" class="meta"></span>
-      <span class="sp"></span>
-      <button class="ghost" id="ckCancel">取消</button>
-      <button id="ckOk">导入</button>
-    </div>
-  </div>
-</div>
+// ---------- 设置抽屉 ----------
+$('#btnCfg').onclick = () => $('#cfgMask').classList.add('show');
+$('#btnCfgClose').onclick = () => $('#cfgMask').classList.remove('show');
+$('#cfgMask').onclick = (e) => { if (e.target.id === 'cfgMask') $('#cfgMask').classList.remove('show'); };
+</script>
 </body>
 </html>
